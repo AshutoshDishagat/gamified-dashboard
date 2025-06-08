@@ -1,24 +1,39 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import { auth } from "./firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import Login from "./Login";
+import Dashboard from "./Dashboard";
+import { signOut } from "firebase/auth"; // ADD THIS
+import './styles.css';
+
+
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    console.log("User detected:", currentUser);
+    setUser(currentUser);
+    setChecking(false);
+  });
+
+  return () => unsubscribe();
+}, []);
+
+
+  if (checking) {
+    return <h3 style={{ textAlign: "center" }}>Checking login...</h3>;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <button onClick={() => signOut(auth)}>Force Logout</button>
+
+      {user ? <Dashboard /> : <Login />}
     </div>
+    
   );
 }
 
